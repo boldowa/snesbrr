@@ -6,7 +6,7 @@ CPPFLAGS += -I"../"
 LDFLAGS += -L"../"
 CFLAGS += -O3
 
-BIN := ../snesbrr.exe
+BIN := ../snesbrr
 SRC := $(wildcard *.cpp)
 OBJ := $(addsuffix .o,$(SRC))
 DEP := $(addsuffix .d,$(SRC))
@@ -17,8 +17,8 @@ DEP := $(addsuffix .d,$(SRC))
 all : $(BIN)
 
 clean :
-	-$(RM) $(OBJ)
-	-$(RM) $(BIN)
+	-$(RM) $(OBJ) $(BIN) $(DEP)
+#	-$(RM)
 
 distclean : clean
 	-$(RM) $(DEP)

@@ -102,6 +102,8 @@ loop_start = 0;
 loop_enabled = false;
 gauss_enabled = false;
 user_pitch_enabled = false;
+header_include = false;
+old_loop = false;
 
 pitch_step_base = 0x1000;
 
@@ -129,6 +131,8 @@ max_error = 0;
 
 void FASTCALL BrrCodec::decode ()
 {
+loop_enabled = false;
+
 if (!gauss_enabled)
  {
  // 7.8125 = 32000 / 0x1000
@@ -151,9 +155,17 @@ uint samp_i = 0;
 uint brr_counter = 1;  // --1 == 0
 int32 pitch = 0x3000;  // decode 4 samples
 
+for(int i=0; i<8; ++i) // init sample
+ sample[i] = 0;
+
 last_sample[0] = 0;
 last_sample[1] = 0;
 
+if (header_include)
+ {
+  loop_start = (*data + (*(data+1)<<8) ) /9 *16;
+  data += 2;
+ }
 while (true)
  {
  while (pitch >= 0)
@@ -162,15 +174,26 @@ while (true)
 
   if (--brr_counter == 0)
    {
-   if (header & 1)
+   if (header & 1){
+    const int16* samp = &sample[samp_i];
+    int32 s;
+    for (int i=2; i>=0; i--)
+     {
+     s = samp[i];
+     s <<= 1;
+     wav_data.push_back(s);
+     }
+     if (header & 2)
+      loop_enabled = true;
     return;
+   }
 
    header = *data;
    ++data;
    brr_counter = 16;
 
-   if ((header & 3) == 1)
-    return;
+//   if ((header & 3) == 1)
+//    return;
    }
 
   uint8 range = header >> 4;
@@ -356,6 +379,11 @@ if (loop_enabled)
 else
  wav_data.resize(((wav_data.size() + 15) / 16) * 16, 0);
 
+if(header_include){
+ brr_data.push_back(uint8(loop_start / 16u * 9u));
+ brr_data.push_back(uint8((loop_start / 16u * 9u) >> 8));
+}
+
 const float base_adjust_rate = 0.0004;
 float adjust_rate = base_adjust_rate;
 const uint32 loop_block = loop_start / 16u;
@@ -386,7 +414,7 @@ while (wi != wimax)
   {
   if (filter != 0)
    {
-   if ((wi == 0) || (wi == loop_block))
+   if ((wi == 0) || ( (wi == loop_block) && old_loop ) )
     continue;
    }
 
@@ -514,7 +542,8 @@ while (wi != wimax)
     for (uint n = 0; n < 16; ++n)
      best_samp[n + 2] = blk_samp[n + 2];
 
-    best_data[0] = (range << 4) | (filter << 2);
+//    best_data[0] = (range << 4) | (filter << 2);
+    best_data[0] = (range << 4) | (filter << 2) | (uint8(loop_enabled) << 1);
 
     for (uint n = 0; n < 8; ++n)
      best_data[n + 1] = (blk_data[n * 2] << 4) | blk_data[n * 2 + 1];
@@ -581,10 +610,11 @@ if (wimax == 0)
 else
  avg_error = total_error / wimax;
 
-if (brr_data.empty() || !loop_enabled)
- brr_data.insert(brr_data.end(), 9, 0);
+//if (brr_data.empty() || !loop_enabled)
+// brr_data.insert(brr_data.end(), 9, 0);
 
-brr_data.end()[-9] |= (uint8(loop_enabled) << 1) | 1;
+//brr_data.end()[-9] |= (uint8(loop_enabled) << 1) | 1;
+brr_data.end()[-9] |= 1;
 
 set_progress(100);
 
@@ -809,7 +839,7 @@ void FASTCALL BrrCodec::write_wav (Stream& os)
 {
 // 8 bytes
 os.write("RIFF", 4);
-write4(os, 36 + wav_data.size() * 2);
+write4(os, 36 + (header_include ? 68 : 0) + wav_data.size() * 2);
 
 // 4 bytes
 os.write("WAVE", 4);
@@ -832,5 +862,25 @@ write4(os, wav_data.size() * 2);
 
 for (std::vector<int16>::const_iterator i = wav_data.begin(); i != wav_data.end(); ++i)
  write2(os, *i);
+if (header_include && loop_enabled)
+ {
+ os.write("smpl", 4);  // Sampler chunk
+ write4(os, 60);  // chunk size
+ write4(os, 0);   // Manufacturer
+ write4(os, 0);   // Product
+ write4(os, 1000000000/output_sample_rate);  // Sample Period
+ write4(os, 60);  // MIDI Uniti Note (C5)
+ write4(os, 0);   // MIDI Pitch Fraction
+ write4(os, 0);   // SMPTE Format 
+ write4(os, 0);   // SMPTE Offset
+ write4(os, 1);   // Sample Loops
+ write4(os, 0);   // Sampler Data
+ write4(os, 0);   // Cue Point ID
+ write4(os, 0);   // Type(Loop forward)
+ write4(os, loop_start);  // Start
+ write4(os, wav_data.size()-1 );  // End
+ write4(os, 0);   // Fraction
+ write4(os, 0);   // PlayCount
+ }
 }
 

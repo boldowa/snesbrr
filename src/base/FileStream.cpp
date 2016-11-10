@@ -198,10 +198,10 @@ if (!is_open())
  throw StreamClosedException();
 
 #ifdef WIN32
-if (_chsize(_fileno(*file), len) != 0)
+if (_chsize(fileno(*file), len) != 0)
  throw StreamException();
 #else
-if (ftruncate(_fileno(*file), len) != 0)
+if (ftruncate(fileno(*file), len) != 0)
  throw StreamException();
 #endif
 }

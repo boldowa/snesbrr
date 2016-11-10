@@ -17,7 +17,7 @@ all : $(OBJ) $(LIB)
 $(LIB) : $(LIB)($(OBJ))
 
 clean :
-	-$(RM) $(OBJ) $(LIB)
+	-$(RM) $(OBJ) $(LIB) $(DEP)
 
 distclean : clean
 	-$(RM) $(DEP)

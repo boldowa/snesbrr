@@ -9,7 +9,7 @@
 
 #undef FASTCALL
 #undef RESTRICT
-#define FASTCALL  __fastcall
+#define FASTCALL 
 #define RESTRICT  __restrict
 
 

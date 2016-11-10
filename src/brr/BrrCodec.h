@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <exception>
+#include <cstring>
 #include "base/basetypes.h"
 #include "base/noncopyable.h"
 #include "base/Stream.h"
@@ -29,6 +30,8 @@ public:
  bool loop_enabled;
  bool gauss_enabled;
  bool user_pitch_enabled;
+ bool header_include;
+ bool old_loop;
 
  uint16 pitch_step_base;
 

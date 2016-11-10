@@ -23,7 +23,9 @@ OPT_Decode,
 OPT_Transcode,
 OPT_Loop,
 OPT_Pitch,
-OPT_Gauss
+OPT_Gauss,
+OPT_Header,
+OPT_Oldloop
 };
 
 
@@ -37,6 +39,8 @@ static const OptionParser::Option option_list[] =
 { OPT_Loop, "-l", "--loop-start", "Set the loop start sample" },
 { OPT_Pitch, "-p", "--pitch", "Set the pitch rate for decoding" },
 { OPT_Gauss, "-g", "--enable-gauss", "Enable gaussian filtering during decoding" },
+{ OPT_Header, "-h", "--header", "Include BRR loop header" },
+{ OPT_Oldloop, "-o", "--old", "Use old loop encode" },
 { 0, 0, 0, 0 }
 };
 
@@ -145,6 +149,14 @@ while (op.next())
 
   case OPT_Gauss:
    codec.gauss_enabled = true;
+  break;
+  
+  case OPT_Header:
+   codec.header_include = true;
+  break;
+  
+  case OPT_Oldloop:
+   codec.old_loop = true;
   break;
 
   default:

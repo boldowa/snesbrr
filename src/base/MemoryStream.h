@@ -5,6 +5,7 @@
 #define libbase_MemoryStream_h
 
 #include <vector>
+#include <cstring>
 #include "Stream.h"
 
 
