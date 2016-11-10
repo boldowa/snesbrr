@@ -1,0 +1,9 @@
+# depends
+*.d
+
+# obj
+*.o
+
+# executable
+snesbrr
+*.exe
