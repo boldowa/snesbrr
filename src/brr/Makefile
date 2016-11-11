@@ -6,7 +6,11 @@ CPPFLAGS += -I"../"
 LDFLAGS += -L"../"
 CFLAGS += -O3
 
+ifdef _WIN32
+BIN  := ../snesbrr.exe
+else
 BIN := ../snesbrr
+endif
 SRC := $(wildcard *.cpp)
 OBJ := $(addsuffix .o,$(SRC))
 DEP := $(addsuffix .d,$(SRC))

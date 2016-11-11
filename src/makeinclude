@@ -1,6 +1,13 @@
 CC = gcc
-CPP = $(CC) -E
 CXX = g++
+AR = ar
+ifdef _WIN32
+  MINGW_PREF = x86_64-w64-mingw32-
+  CC = $(MINGW_PREF)gcc
+  CXX = $(MINGW_PREF)g++
+  AR = $(MINGW_PREF)ar
+endif
+CPP = $(CC) -E
 WINDRES = windres
 RM = rm -f
 
@@ -8,6 +15,9 @@ CFLAGS = -O2 -march=native -fomit-frame-pointer -fforce-addr -falign-jumps -fali
 CXXFLAGS = $(CFLAGS)
 CPPFLAGS = -DNDEBUG
 LDFLAGS = -s -Wl,--gc-sections
+ifdef _WIN32
+  LDFLAGS += -static
+endif
 ARFLAGS = -rc
 
 
