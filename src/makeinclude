@@ -1,20 +1,21 @@
 CC = gcc
 CXX = g++
 AR = ar
+WINDRES = windres
 ifdef _WIN32
-  MINGW_PREF = x86_64-w64-mingw32-
+  MINGW_PREF = i686-w64-mingw32-
   CC = $(MINGW_PREF)gcc
   CXX = $(MINGW_PREF)g++
   AR = $(MINGW_PREF)ar
+  WINDRES = $(MINGW_PREF)windres
 endif
 CPP = $(CC) -E
-WINDRES = windres
 RM = rm -f
 
-CFLAGS = -O2 -march=native -fomit-frame-pointer -fforce-addr -falign-jumps -falign-functions -fno-guess-branch-probability -Wall -Wextra -Winline --param inline-unit-growth=350 -finline-limit=3500 -Wno-unused -pedantic -ffunction-sections -fdata-sections -fpermissive
+CFLAGS = -O2 -m32 -march=native -fomit-frame-pointer -fforce-addr -falign-jumps -falign-functions -fno-guess-branch-probability -Wall -Wextra -Winline --param inline-unit-growth=350 -finline-limit=3500 -Wno-unused -pedantic -ffunction-sections -fdata-sections -fpermissive
 CXXFLAGS = $(CFLAGS)
-CPPFLAGS = -DNDEBUG
-LDFLAGS = -s -Wl,--gc-sections
+CPPFLAGS = -m32 -DNDEBUG
+LDFLAGS = -s -m32 -Wl,--gc-sections
 ifdef _WIN32
   LDFLAGS += -static
 endif
